@@ -1,4 +1,7 @@
 {
   "vsicons.presets.angular": true,
-  "prisma.schemaPath": "backend/prisma/schema.prisma"
+  "prisma.schemaPath": "backend/prisma/schema.prisma",
+  "files.associations": {
+    "*.prisma": "prisma"
+  }
 }
