@@ -131,3 +131,15 @@ GitHub Actions (`.github/workflows/ci.yml`) รันเทสต์และ bu
 ## Tech stack
 
 Angular 22 · TypeScript · NestJS 12 · Prisma 6 · PostgreSQL 16 · Vitest · Supertest · Docker Compose · GitHub Actions
+
+## Screenshots
+### ฝั่งลูกค้า
+<img width="1880" height="927" alt="Screenshot 2026-11-03 135655" src="https://github.com/user-attachments/assets/3e0fa6ab-95d2-41e7-9f50-f7b6ada6349f" />
+<img width="1878" height="927" alt="Screenshot 2026-11-03 135648" src="https://github.com/user-attachments/assets/0b1183c3-c7cc-480d-91ed-90ceed36742a" />
+<img width="1878" height="932" alt="Screenshot 2026-11-03 135634" src="https://github.com/user-attachments/assets/e843fc68-95a2-4740-ac93-f7154b12a20e" />
+
+### ฝั่งแอดมิน
+<img width="1860" height="927" alt="Screenshot 2026-11-03 135746" src="https://github.com/user-attachments/assets/d897955b-5786-42b6-a554-ef4aae0a6fd7" />
+<img width="1887" height="922" alt="Screenshot 2026-11-03 135736" src="https://github.com/user-attachments/assets/9d267063-3a9b-4cb7-97d4-c657d683352e" />
+
+
