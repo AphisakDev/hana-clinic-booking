@@ -14,3 +14,4 @@ npm run build      # production build in dist/
 - `src/app/pages`: one folder per route
 - Design tokens live in `src/styles.css` and match the "Hana" variables in Figma.
 - For a deployed API, set `apiBaseUrl` in `src/environments/environment.production.ts`.
+"# hana-clinic-booking" 
