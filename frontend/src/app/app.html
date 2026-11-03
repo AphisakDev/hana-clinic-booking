@@ -1,0 +1,42 @@
+@if (!isAdmin()) {
+  <a class="skip-link" href="#main">ข้ามไปยังเนื้อหา</a>
+
+  <header class="site-header">
+    <div class="container header-inner">
+      <a routerLink="/" class="brand" aria-label="HANA Clinic หน้าแรก">
+        <app-logo subtitle="SKIN & AESTHETIC CLINIC" />
+      </a>
+
+      <nav class="main-nav" aria-label="เมนูหลัก">
+        <a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }"
+          >ทรีตเมนต์</a
+        >
+        <a routerLink="/doctors" routerLinkActive="active">ทีมแพทย์</a>
+        <a routerLink="/my-bookings" routerLinkActive="active">นัดหมายของฉัน</a>
+      </nav>
+
+      <a class="line-btn" href="https://line.me/" target="_blank" rel="noopener">
+        <app-icon name="message" [size]="16" /> ทัก LINE
+      </a>
+    </div>
+  </header>
+}
+
+<main id="main">
+  <router-outlet />
+</main>
+
+@if (!isAdmin()) {
+  <footer class="site-footer">
+    <div class="container footer-inner">
+      <span>© {{ year }} HANA Clinic · แบรนด์สมมติ (portfolio project)</span>
+      <span class="footer-contact"
+        ><app-icon name="message" [size]="15" /> ทักแชทผ่าน LINE ได้ทุกวัน</span
+      >
+      <span class="footer-links"
+        ><a href="#">ความเป็นส่วนตัว</a><a href="#">นโยบายการจอง</a
+        ><a routerLink="/admin">สำหรับพนักงาน</a></span
+      >
+    </div>
+  </footer>
+}

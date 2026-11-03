@@ -1,0 +1,310 @@
+.page-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+.page-head h1 {
+  font-size: 28px;
+  margin-top: 4px;
+}
+.small {
+  font-size: 12px;
+}
+
+.toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin: 20px 0 16px;
+}
+.day-nav {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.day-nav input {
+  height: 40px;
+  padding: 0 12px;
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface);
+}
+.icon-btn {
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border: 1px solid var(--color-border);
+  border-radius: 50%;
+  background: var(--color-surface);
+  color: var(--color-primary);
+  cursor: pointer;
+}
+.icon-btn:hover {
+  border-color: var(--color-primary);
+}
+
+.block-form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 16px;
+  padding: 20px;
+}
+.block-form h2 {
+  font-size: 18px;
+}
+.form-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 13px;
+  color: var(--color-text-strong);
+}
+.field.grow {
+  flex: 1;
+  min-width: 200px;
+}
+.field input,
+.field select {
+  height: 42px;
+  padding: 0 12px;
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface);
+  font-size: 14px;
+}
+.form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+.action-error {
+  margin-bottom: 12px;
+}
+
+.summary {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 12px;
+  margin-bottom: 16px;
+  font-size: 13px;
+}
+.sum-total {
+  font-size: 15px;
+  color: var(--color-text-strong);
+}
+.sum-total strong {
+  font-family: var(--font-heading);
+  font-size: 22px;
+  font-weight: 500;
+}
+.sum-revenue {
+  margin-left: auto;
+}
+
+.status-pill {
+  display: inline-flex;
+  padding: 3px 10px;
+  border-radius: var(--radius-pill);
+  font-size: 12px;
+  font-weight: 500;
+  background: var(--color-surface-subtle);
+  color: var(--color-text);
+  white-space: nowrap;
+}
+.status-pill[data-status='CONFIRMED'] {
+  background: #fdf0e3;
+  color: #8a5a1f;
+}
+.status-pill[data-status='CHECKED_IN'] {
+  background: var(--color-surface-tint);
+  color: var(--color-primary);
+}
+.status-pill[data-status='COMPLETED'] {
+  background: #e6f0e8;
+  color: var(--color-success);
+}
+.status-pill[data-status='NO_SHOW'] {
+  background: #fbe9e6;
+  color: var(--color-danger);
+}
+.status-pill[data-status='CANCELLED'] {
+  background: #efeae8;
+  color: var(--color-text-muted);
+  text-decoration: line-through;
+}
+
+.columns {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 16px;
+  align-items: start;
+  transition: opacity 0.15s;
+}
+.columns.dim {
+  opacity: 0.6;
+}
+.doctor-col {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 14px;
+  border-radius: var(--radius-lg);
+  background: var(--color-surface-subtle);
+}
+.doctor-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 4px 6px;
+}
+.doctor-head div {
+  display: flex;
+  flex-direction: column;
+}
+.doctor-head strong {
+  color: var(--color-text-strong);
+}
+
+.block-card {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 14px;
+  border: 1px dashed var(--color-border-strong);
+  border-radius: var(--radius-md);
+  background: repeating-linear-gradient(-45deg, #fff, #fff 8px, #fbf3ef 8px, #fbf3ef 16px);
+  font-size: 13px;
+}
+.block-card div {
+  display: flex;
+  flex-direction: column;
+}
+.block-card strong {
+  color: var(--color-text-strong);
+}
+
+.booking {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 14px;
+  border-radius: var(--radius-md);
+  border-left: 4px solid var(--color-border-strong);
+}
+.booking[data-status='CONFIRMED'] {
+  border-left-color: #e2b47a;
+}
+.booking[data-status='CHECKED_IN'] {
+  border-left-color: var(--color-primary);
+}
+.booking[data-status='COMPLETED'] {
+  border-left-color: var(--color-success);
+}
+.booking[data-status='NO_SHOW'] {
+  border-left-color: var(--color-danger);
+}
+.booking[data-status='CANCELLED'] {
+  opacity: 0.6;
+}
+.booking-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+}
+.time {
+  font-weight: 600;
+  color: var(--color-text-strong);
+}
+.client {
+  margin-top: 2px;
+  color: var(--color-text-strong);
+}
+.treatment {
+  font-size: 13px;
+}
+.contact a {
+  color: inherit;
+}
+.note {
+  margin-top: 4px;
+  padding: 6px 10px;
+  border-radius: var(--radius-sm);
+  background: var(--color-surface-subtle);
+  font-size: 12px;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 8px;
+}
+.act {
+  height: 32px;
+  padding: 0 12px;
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-pill);
+  background: var(--color-surface);
+  color: var(--color-text-strong);
+  font-size: 13px;
+  cursor: pointer;
+}
+.act:hover:not(:disabled) {
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+}
+.act[data-action='CHECKED_IN'],
+.act[data-action='COMPLETED'] {
+  background: var(--color-primary);
+  border-color: var(--color-primary);
+  color: #fff;
+}
+.act[data-action='CHECKED_IN']:hover:not(:disabled),
+.act[data-action='COMPLETED']:hover:not(:disabled) {
+  background: var(--color-primary-hover);
+  border-color: var(--color-primary-hover);
+  color: #fff;
+}
+.act.confirm,
+.act.confirm:hover:not(:disabled),
+.act.confirm:focus,
+.act.confirm:active {
+  background: var(--color-danger);
+  border-color: var(--color-danger);
+  color: #ffffff !important;
+}
+.act.confirm:hover:not(:disabled) {
+  background: #96352d;
+  border-color: #96352d;
+  color: #ffffff !important;
+}
+.act:disabled {
+  opacity: 0.5;
+  cursor: wait;
+}
+.empty {
+  padding: 20px 4px;
+  font-size: 13px;
+  text-align: center;
+}
+
+@media (max-width: 640px) {
+  .sum-revenue {
+    margin-left: 0;
+  }
+}

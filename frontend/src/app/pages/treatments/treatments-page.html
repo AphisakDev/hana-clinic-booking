@@ -1,0 +1,95 @@
+<div class="container">
+  <section class="hero card">
+    <div class="hero-copy">
+      <span class="eyebrow">JAPANESE-STYLE AESTHETIC CLINIC</span>
+      <h1>สวยแบบธรรมชาติ เริ่มจากความเข้าใจ</h1>
+      <p class="muted">
+        ทรีตเมนต์ความงามสไตล์ญี่ปุ่น ราคาชัดเจน ไม่มีเซลล์ ไม่บังคับซื้อแพ็กเกจ
+        เลือกเฉพาะสิ่งที่ผิวคุณต้องการจริง ๆ
+      </p>
+      <ul class="credentials">
+        <li><app-icon name="shield" [size]="16" /> แพทย์ผู้เชี่ยวชาญ</li>
+        <li><app-icon name="heart" [size]="16" /> ไม่มีเซลล์ ไม่ขายแพ็กเกจ</li>
+        <li><app-icon name="wallet" [size]="16" /> จองฟรี ชำระที่คลินิก</li>
+      </ul>
+    </div>
+    <img
+      appImgFallback
+      class="hero-photo photo"
+      src="/images/clinic-interior.jpg"
+      alt="บรรยากาศภายในคลินิก"
+      width="497"
+      height="228"
+    />
+  </section>
+
+  <section class="library" aria-labelledby="library-title">
+    <div class="library-head">
+      <h2 id="library-title">เลือกทรีตเมนต์</h2>
+      <label class="search">
+        <app-icon name="search" [size]="17" />
+        <span class="visually-hidden">ค้นหาทรีตเมนต์</span>
+        <input
+          type="search"
+          placeholder="ค้นหาทรีตเมนต์หรือปัญหาผิว"
+          [value]="searchText()"
+          (input)="onSearch($event)"
+        />
+      </label>
+    </div>
+
+    <div class="filters">
+      <div class="chips" role="group" aria-label="หมวดทรีตเมนต์">
+        @for (c of categories; track c.value) {
+          <button
+            type="button"
+            class="filter-chip"
+            [class.active]="category() === c.value"
+            [attr.aria-pressed]="category() === c.value"
+            (click)="selectCategory(c.value)"
+          >
+            {{ c.label }}
+          </button>
+        }
+      </div>
+      <span class="count muted" aria-live="polite">{{ count() }} รายการ</span>
+    </div>
+
+    @if (error(); as message) {
+      <div class="error-banner" role="alert">
+        <app-icon name="alert" /> {{ message }}
+        <button type="button" class="link-action" (click)="treatments.reload()">ลองใหม่</button>
+      </div>
+    } @else if (treatments.isLoading() && !treatments.hasValue()) {
+      <div class="grid">
+        @for (i of [1, 2, 3]; track i) {
+          <div class="skeleton" style="height: 420px"></div>
+        }
+      </div>
+    } @else if (count() === 0) {
+      <div class="state-box card">
+        <p>ไม่พบทรีตเมนต์ที่ตรงกับการค้นหา</p>
+        <button type="button" class="link-action" (click)="clearFilters()">ล้างตัวกรอง</button>
+      </div>
+    } @else {
+      <div class="grid" [class.dim]="treatments.isLoading()">
+        @for (t of treatments.value(); track t.id) {
+          <app-treatment-card [treatment]="t" />
+        }
+      </div>
+    }
+  </section>
+
+  <section class="consult card">
+    <div class="consult-copy">
+      <app-icon name="message" [size]="28" />
+      <div>
+        <h3>ยังไม่แน่ใจว่าเหมาะกับอะไร?</h3>
+        <p class="muted">เริ่มจากปรึกษาแพทย์ฟรี ไม่มีเซลล์ ไม่มีการกดดันให้ซื้อ</p>
+      </div>
+    </div>
+    <a class="btn btn-secondary" routerLink="/book/doctor-consultation">
+      จองปรึกษาฟรี <app-icon name="arrowRight" [size]="16" />
+    </a>
+  </section>
+</div>

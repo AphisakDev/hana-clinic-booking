@@ -1,0 +1,202 @@
+<div class="container">
+  <section class="card panel">
+    <span class="eyebrow">นัดหมายของฉัน</span>
+    <h1>ดูหรือยกเลิกนัดหมาย</h1>
+    <p class="muted">ไม่ต้องสมัครสมาชิก ยืนยันด้วยเบอร์โทรที่ใช้จอง หรือใช้รหัสการจอง</p>
+
+    @if (!session.isVerified()) {
+      <div class="tabs" role="tablist" aria-label="วิธีค้นหานัดหมาย">
+        <button
+          type="button"
+          role="tab"
+          [attr.aria-selected]="mode() === 'phone'"
+          [class.on]="mode() === 'phone'"
+          (click)="mode.set('phone')"
+        >
+          เบอร์โทร
+        </button>
+        <button
+          type="button"
+          role="tab"
+          [attr.aria-selected]="mode() === 'reference'"
+          [class.on]="mode() === 'reference'"
+          (click)="mode.set('reference')"
+        >
+          รหัสการจอง
+        </button>
+      </div>
+    }
+
+    @if (session.isVerified()) {
+      <!-- Verified: list -->
+      <div class="verified">
+        <span
+          ><app-icon name="checkCircle" [size]="18" /> ยืนยันเบอร์
+          {{ formatPhone(session.phone()!) }} แล้ว</span
+        >
+        <button type="button" class="link-action" (click)="signOut()">ใช้เบอร์อื่น</button>
+      </div>
+
+      @if (expired()) {
+        <div class="error-banner" role="alert">
+          <app-icon name="alert" /> การยืนยันหมดอายุแล้ว
+          <button type="button" class="link-action" (click)="signOut()">ยืนยันเบอร์อีกครั้ง</button>
+        </div>
+      } @else if (bookings.error()) {
+        <div class="error-banner" role="alert">
+          <app-icon name="alert" /> โหลดนัดหมายไม่สำเร็จ
+          <button type="button" class="link-action" (click)="bookings.reload()">ลองใหม่</button>
+        </div>
+      } @else if (bookings.isLoading()) {
+        <div class="skeleton" style="height: 96px"></div>
+      } @else if (!bookings.value()?.length) {
+        <div class="empty">
+          <p>ยังไม่มีนัดหมายของเบอร์นี้</p>
+          <a class="btn btn-primary" routerLink="/"
+            >ดูทรีตเมนต์ <app-icon name="arrowRight" [size]="16"
+          /></a>
+        </div>
+      } @else {
+        @if (upcoming().length) {
+          <h2>นัดที่กำลังจะถึง</h2>
+          <ul class="list">
+            @for (b of upcoming(); track b.reference) {
+              <li>
+                <a class="booking-row upcoming" [routerLink]="['/bookings', b.reference]">
+                  <span class="date-box">
+                    <strong>{{ b.date.slice(8) }}</strong>
+                    <span>{{ thaiDate(b.date, { short: true }).split(' ')[1] }}</span>
+                  </span>
+                  <span class="info">
+                    <strong>{{ b.treatment.name }}</strong>
+                    <span class="muted"
+                      >{{ thaiDate(b.date, { weekday: true }) }} · {{ b.startTime }}–{{
+                        b.endTime
+                      }}
+                      น.</span
+                    >
+                    <span class="muted">{{ b.branch.name }} · {{ b.doctor.name }}</span>
+                  </span>
+                  <app-icon name="chevronRight" [size]="18" />
+                </a>
+              </li>
+            }
+          </ul>
+        }
+        @if (past().length) {
+          <h2>ประวัติ</h2>
+          <ul class="list">
+            @for (b of past(); track b.reference) {
+              <li>
+                <a class="booking-row past" [routerLink]="['/bookings', b.reference]">
+                  <span class="info">
+                    <strong>{{ b.treatment.name }}</strong>
+                    <span class="muted"
+                      >{{ thaiDate(b.date, { short: true }) }} · {{ b.startTime }} น. ·
+                      {{ price(b.treatment.priceThb) }}</span
+                    >
+                  </span>
+                  <span class="tag" [class.cancelled]="b.status === 'CANCELLED'">{{
+                    statusLabel(b)
+                  }}</span>
+                </a>
+              </li>
+            }
+          </ul>
+        }
+      }
+    } @else if (mode() === 'reference') {
+      <!-- By reference -->
+      <form (ngSubmit)="openReference()" class="row">
+        <label class="visually-hidden" for="ref">รหัสการจอง</label>
+        <input
+          id="ref"
+          name="ref"
+          class="ref"
+          [ngModel]="reference()"
+          (ngModelChange)="reference.set($event)"
+          placeholder="เช่น HNA-691118-AB12"
+          autocomplete="off"
+        />
+        <button type="submit" class="btn btn-primary" [disabled]="!reference().trim()">
+          ค้นหา <app-icon name="arrowRight" [size]="16" />
+        </button>
+      </form>
+    } @else if (codeSentTo(); as sentTo) {
+      <!-- Step 2: code -->
+      <p class="step-text">
+        กรอกรหัส 6 หลักที่ส่งไปยัง <strong>{{ formatPhone(sentTo) }}</strong>
+      </p>
+      @if (demoCode(); as demo) {
+        <p class="demo-hint">
+          <app-icon name="sparkles" [size]="16" /> โหมดเดโม (ไม่ได้ส่ง SMS จริง): รหัสคือ
+          <strong>{{ demo }}</strong>
+        </p>
+      }
+      <form (ngSubmit)="verify()" class="row">
+        <label class="visually-hidden" for="otp">รหัสยืนยัน</label>
+        <input
+          id="otp"
+          name="otp"
+          class="otp"
+          inputmode="numeric"
+          autocomplete="one-time-code"
+          maxlength="6"
+          placeholder="••••••"
+          [ngModel]="code()"
+          (ngModelChange)="onCodeInput($event)"
+          [disabled]="verifying()"
+        />
+        <button type="submit" class="btn btn-primary" [disabled]="!codeValid() || verifying()">
+          {{ verifying() ? 'กำลังตรวจสอบ…' : 'ยืนยัน' }}
+        </button>
+      </form>
+      @if (error(); as message) {
+        <div class="error-banner" role="alert"><app-icon name="alert" /> {{ message }}</div>
+      }
+      <div class="secondary">
+        <button type="button" class="link-action" (click)="changePhone()">เปลี่ยนเบอร์</button>
+        @if (resendIn() > 0) {
+          <span class="muted">ขอรหัสใหม่ได้ใน {{ resendIn() }} วินาที</span>
+        } @else {
+          <button
+            type="button"
+            class="link-action"
+            (click)="phone.set(sentTo); sendCode()"
+            [disabled]="sending()"
+          >
+            ส่งรหัสอีกครั้ง
+          </button>
+        }
+      </div>
+    } @else {
+      <!-- Step 1: phone -->
+      <form (ngSubmit)="sendCode()" class="row">
+        <label class="visually-hidden" for="phone">เบอร์โทร</label>
+        <input
+          id="phone"
+          name="phone"
+          type="tel"
+          inputmode="tel"
+          autocomplete="tel"
+          placeholder="เบอร์ที่ใช้จอง เช่น 089-123-4567"
+          [ngModel]="phone()"
+          (ngModelChange)="phone.set($event)"
+        />
+        <button
+          type="submit"
+          class="btn btn-primary"
+          [disabled]="!phoneValid() || sending() || resendIn() > 0"
+        >
+          {{ sending() ? 'กำลังส่ง…' : resendIn() > 0 ? 'รอ ' + resendIn() + ' วิ' : 'ขอรหัส OTP' }}
+        </button>
+      </form>
+      @if (error(); as message) {
+        <div class="error-banner" role="alert"><app-icon name="alert" /> {{ message }}</div>
+      }
+      <p class="muted small">
+        <app-icon name="shield" [size]="14" /> รหัสใช้ได้ 5 นาที และใช้ได้ครั้งเดียว
+      </p>
+    }
+  </section>
+</div>

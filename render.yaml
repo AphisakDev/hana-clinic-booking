@@ -1,0 +1,21 @@
+# Render Blueprint: New > Blueprint > pick this repo.
+# Free web service running the API in demo mode (sample data in memory,
+# resets when the service restarts). No database needed.
+services:
+  - type: web
+    name: clinic-booking-api
+    runtime: node
+    plan: free
+    rootDir: backend
+    buildCommand: npm ci && npm run build
+    startCommand: node dist/main.js
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_VERSION
+        value: '22'
+      - key: NODE_ENV
+        value: production
+      - key: DATA_SOURCE
+        value: memory
+      - key: JWT_SECRET
+        generateValue: true

@@ -1,0 +1,219 @@
+.narrow {
+  max-width: calc(1120px + var(--gutter) * 2);
+}
+.message {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  margin: 46px auto 32px;
+  text-align: center;
+  max-width: 720px;
+}
+.seal {
+  display: grid;
+  place-items: center;
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  background: var(--color-surface-tint);
+  color: var(--color-primary);
+}
+.seal.cancelled {
+  background: var(--color-surface-subtle);
+  color: var(--color-text-muted);
+}
+.message h1 {
+  font-size: 40px;
+}
+.reference {
+  font-size: 13px;
+  color: var(--color-text-muted);
+  letter-spacing: 0.04em;
+}
+.reference strong {
+  color: var(--color-text-strong);
+}
+
+.appointment {
+  display: grid;
+  grid-template-columns: 326px 1fr;
+  overflow: hidden;
+}
+.appointment.is-cancelled {
+  opacity: 0.75;
+}
+.photo-wrap {
+  position: relative;
+}
+.photo-wrap .photo {
+  width: 100%;
+  height: 100%;
+  min-height: 260px;
+}
+.status {
+  position: absolute;
+  left: 16px;
+  bottom: 16px;
+  gap: 6px;
+}
+.details {
+  padding: 32px;
+}
+.title-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
+}
+.title-row h2 {
+  font-size: 28px;
+  margin-top: 6px;
+}
+.payment {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  font-size: 13px;
+}
+.payment strong {
+  font-family: var(--font-heading);
+  font-size: 26px;
+  color: var(--color-text-strong);
+}
+hr {
+  margin: 22px 0;
+  border: 0;
+  border-top: 1px solid var(--color-border);
+}
+.info-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 22px 32px;
+}
+.info {
+  display: flex;
+  gap: 14px;
+}
+.info app-icon {
+  color: var(--color-primary);
+  margin-top: 2px;
+}
+.info > div {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.info strong {
+  color: var(--color-text-strong);
+  font-weight: 500;
+}
+.label {
+  font-size: 13px;
+}
+.note {
+  margin-top: 20px;
+  font-size: 14px;
+}
+
+.next-steps {
+  margin-top: 40px;
+}
+.next-steps h2 {
+  font-size: 28px;
+  margin-bottom: 22px;
+}
+.steps {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 32px;
+}
+.steps > div {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding-top: 18px;
+  border-top: 1px solid var(--color-border);
+}
+.steps app-icon {
+  color: var(--color-primary);
+}
+.steps strong {
+  color: var(--color-text-strong);
+}
+.steps p {
+  font-size: 13px;
+}
+
+.manage {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 24px;
+  margin-top: 32px;
+  padding: 24px;
+  background: var(--color-surface-tint);
+  border: 0;
+}
+.manage h3 {
+  font-size: 20px;
+}
+.manage .error-banner {
+  margin-top: 10px;
+}
+.manage-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+}
+.confirm-text {
+  font-size: 14px;
+}
+.btn-danger {
+  background: var(--color-danger);
+  color: #fff;
+}
+
+.help {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  margin-top: 32px;
+  font-size: 14px;
+}
+.missing {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  margin-top: 48px;
+}
+.page-error {
+  margin-top: 40px;
+}
+
+@media (max-width: 800px) {
+  .appointment {
+    grid-template-columns: 1fr;
+  }
+  .photo-wrap .photo {
+    min-height: 200px;
+    max-height: 240px;
+  }
+  .details {
+    padding: 22px;
+  }
+  .info-grid,
+  .steps {
+    grid-template-columns: 1fr;
+  }
+  .manage {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .message h1 {
+    font-size: 30px;
+  }
+}

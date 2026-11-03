@@ -1,0 +1,200 @@
+<div class="container narrow">
+  @if (notFound()) {
+    <div class="state-box card missing">
+      <h1>ไม่พบการจองนี้</h1>
+      <p>ตรวจสอบรหัสการจองอีกครั้ง หรือทักแชท LINE ให้เราช่วยค้นหา</p>
+      <a class="btn btn-secondary" routerLink="/my-bookings">ค้นหาด้วยรหัสอื่น</a>
+    </div>
+  } @else if (booking.error()) {
+    <div class="error-banner page-error" role="alert">
+      <app-icon name="alert" /> โหลดข้อมูลการจองไม่สำเร็จ
+      <button type="button" class="link-action" (click)="booking.reload()">ลองใหม่</button>
+    </div>
+  } @else if (booking.hasValue()) {
+    @let b = booking.value();
+    @let cancelled = b.status === 'CANCELLED';
+
+    <header class="message">
+      <span class="seal" [class.cancelled]="cancelled">
+        <app-icon [name]="cancelled ? 'x' : 'check'" [size]="26" />
+      </span>
+      <span class="eyebrow">{{
+        cancelled ? 'ยกเลิกแล้ว' : justBooked ? 'จองสำเร็จแล้ว' : 'นัดหมายของคุณ'
+      }}</span>
+      <h1>
+        @if (cancelled) {
+          ยกเลิกนัดหมายเรียบร้อย
+        } @else {
+          แล้วพบกันนะคะ คุณ{{ b.customerName.split(' ')[0] }}
+        }
+      </h1>
+      <p class="muted">
+        @if (cancelled) {
+          หากต้องการนัดใหม่ เลือกทรีตเมนต์และเวลาที่สะดวกได้เลย
+        } @else {
+          ยืนยันนัดหมายเรียบร้อย เราจะส่งรายละเอียดไปที่ {{ b.email }}
+        }
+      </p>
+      <p class="reference">
+        รหัสการจอง · <strong>{{ b.reference }}</strong>
+      </p>
+    </header>
+
+    <article class="appointment card" [class.is-cancelled]="cancelled">
+      <div class="photo-wrap">
+        <img
+          appImgFallback
+          class="photo"
+          [src]="b.treatment.imageUrl"
+          [alt]="b.treatment.name"
+          width="326"
+          height="365"
+        />
+        <span class="chip status">
+          <app-icon [name]="cancelled ? 'x' : 'checkCircle'" [size]="14" />
+          {{ cancelled ? 'ยกเลิกแล้ว' : 'ยืนยันแล้ว' }}
+        </span>
+      </div>
+      <div class="details">
+        <div class="title-row">
+          <div>
+            <span class="eyebrow">นัดหมายของคุณ</span>
+            <h2>{{ b.treatment.name }}</h2>
+          </div>
+          <div class="payment">
+            <strong>{{ price(b.treatment.priceThb) }}</strong>
+            <span class="muted">ชำระที่คลินิก</span>
+          </div>
+        </div>
+        <hr />
+        <div class="info-grid">
+          <div class="info">
+            <app-icon name="calendar" [size]="20" />
+            <div>
+              <span class="muted label">{{ thaiDate(b.date, { weekday: true }) }}</span>
+              <strong
+                >{{ b.startTime }}–{{ b.endTime }} น. · {{ b.treatment.durationMin }} นาที</strong
+              >
+            </div>
+          </div>
+          <div class="info">
+            <app-icon name="mapPin" [size]="20" />
+            <div>
+              <span class="muted label">{{ b.branch.name }}</span>
+              <strong>{{ b.branch.address }}</strong>
+              <span class="muted label">{{ b.branch.transit }}</span>
+            </div>
+          </div>
+          <div class="info">
+            <app-icon name="user" [size]="20" />
+            <div>
+              <span class="muted label">แพทย์ผู้ดูแล</span>
+              <strong>{{ b.doctor.name }}</strong>
+              <span class="muted label">{{ b.doctor.title }}</span>
+            </div>
+          </div>
+          <div class="info">
+            <app-icon name="message" [size]="20" />
+            <div>
+              <span class="muted label">ข้อมูลติดต่อ</span>
+              <strong>{{ b.phone }}</strong>
+              <span class="muted label">{{ b.email }}</span>
+            </div>
+          </div>
+        </div>
+        @if (b.note) {
+          <p class="note muted">หมายเหตุ: {{ b.note }}</p>
+        }
+      </div>
+    </article>
+
+    @if (!cancelled) {
+      <section class="next-steps">
+        <h2>เตรียมตัวก่อนมาคลินิก</h2>
+        <div class="steps">
+          <div>
+            <app-icon name="clipboard" [size]="22" />
+            <strong>กรอกแบบประเมินผิว</strong>
+            <p class="muted">
+              แบบฟอร์มจะส่งไปทาง LINE และอีเมล กรอกก่อนวันนัดเพื่อให้แพทย์เตรียมตัว
+            </p>
+          </div>
+          <div>
+            <app-icon name="sparkles" [size]="22" />
+            <strong>งดสกินแคร์แรง ๆ</strong>
+            <p class="muted">งดเรตินอยด์และกรดผลัดเซลล์ 48 ชม. เลี่ยงแดดแรงและแว็กซ์หน้า 7 วัน</p>
+          </div>
+          <div>
+            <app-icon name="clock" [size]="22" />
+            <strong>มาก่อนเวลาเล็กน้อย</strong>
+            <p class="muted">มาก่อนนัด 10 นาทีเพื่อลงทะเบียน ครั้งแรกตรวจสภาพผิวฟรี</p>
+          </div>
+        </div>
+      </section>
+    }
+
+    <section class="manage card">
+      @if (cancelled) {
+        <div>
+          <h3>อยากนัดใหม่?</h3>
+          <p class="muted">เลือกวันและเวลาใหม่ได้ทันที</p>
+        </div>
+        <a
+          class="btn btn-primary"
+          [routerLink]="['/book', b.treatment.slug]"
+          [queryParams]="{ branch: b.branch.slug }"
+        >
+          จองใหม่ <app-icon name="arrowRight" [size]="16" />
+        </a>
+      } @else if (b.canCancel) {
+        <div>
+          <h3>เปลี่ยนแผนได้ เราเข้าใจ</h3>
+          <p class="muted">ยกเลิกออนไลน์ได้ฟรี ก่อน {{ bangkokDateTime(b.cancelDeadline) }}</p>
+          @if (cancelError(); as message) {
+            <div class="error-banner" role="alert"><app-icon name="alert" /> {{ message }}</div>
+          }
+        </div>
+        <div class="manage-actions">
+          @if (confirmingCancel()) {
+            <span class="muted confirm-text">ยืนยันยกเลิกนัดนี้?</span>
+            <button
+              type="button"
+              class="btn btn-secondary"
+              (click)="confirmingCancel.set(false)"
+              [disabled]="cancelling()"
+            >
+              ไม่ใช่
+            </button>
+            <button
+              type="button"
+              class="btn btn-danger"
+              (click)="cancel()"
+              [disabled]="cancelling()"
+            >
+              {{ cancelling() ? 'กำลังยกเลิก…' : 'ยกเลิกนัด' }}
+            </button>
+          } @else {
+            <button type="button" class="btn btn-secondary" (click)="confirmingCancel.set(true)">
+              ยกเลิกนัดหมาย
+            </button>
+            <a class="btn btn-primary" routerLink="/"
+              >ดูทรีตเมนต์อื่น <app-icon name="arrowRight" [size]="16"
+            /></a>
+          }
+        </div>
+      } @else {
+        <div>
+          <h3>ต้องการเลื่อนนัด?</h3>
+          <p class="muted">ภายใน 24 ชม. ก่อนนัด กรุณาทักแชท LINE หรือโทรหาสาขาโดยตรง</p>
+        </div>
+      }
+    </section>
+
+    <p class="help muted">
+      <app-icon name="message" [size]="16" /> มีคำถามก่อนมาคลินิก? ทักแชท LINE หรือโทรหาสาขาได้เลย
+    </p>
+  } @else {
+    <div class="skeleton" style="height: 220px; margin-top: 48px"></div>
+    <div class="skeleton" style="height: 365px; margin-top: 32px"></div>
+  }
+</div>

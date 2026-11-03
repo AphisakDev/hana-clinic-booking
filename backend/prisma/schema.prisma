@@ -1,0 +1,121 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+enum TreatmentCategory {
+  SKIN
+  CONTOUR
+  LASER
+  CONSULT
+}
+
+enum BookingStatus {
+  CONFIRMED
+  CHECKED_IN
+  COMPLETED
+  NO_SHOW
+  CANCELLED
+}
+
+enum StaffRole {
+  ADMIN
+  RECEPTION
+}
+
+model Staff {
+  id           String    @id @default(cuid())
+  email        String    @unique
+  name         String
+  role         StaffRole @default(RECEPTION)
+  passwordHash String
+  createdAt    DateTime  @default(now())
+}
+
+/// A period when a doctor cannot take bookings (leave, meeting, ...).
+model TimeBlock {
+  id        String   @id @default(cuid())
+  doctorId  String
+  doctor    Doctor   @relation(fields: [doctorId], references: [id])
+  startAt   DateTime
+  endAt     DateTime
+  reason    String
+  createdAt DateTime @default(now())
+
+  @@index([doctorId, startAt])
+}
+
+model Branch {
+  id        String    @id @default(cuid())
+  slug      String    @unique
+  name      String
+  address   String
+  transit   String
+  openTime  String // "HH:mm" (Asia/Bangkok)
+  closeTime String // "HH:mm" (Asia/Bangkok)
+  doctors   Doctor[]
+  bookings  Booking[]
+}
+
+model Doctor {
+  id              String    @id @default(cuid())
+  slug            String    @unique
+  name            String
+  title           String
+  experienceYears Int
+  bio             String
+  branchId        String
+  branch          Branch      @relation(fields: [branchId], references: [id])
+  bookings        Booking[]
+  timeBlocks      TimeBlock[]
+}
+
+model Treatment {
+  id          String            @id @default(cuid())
+  slug        String            @unique
+  name        String
+  category    TreatmentCategory
+  badge       String
+  summary     String
+  description String
+  highlight   String
+  priceThb    Int
+  durationMin Int
+  imageUrl    String
+  popular     Boolean           @default(false)
+  steps       Json // { title: string; description: string }[]
+  prepTips    Json // string[]
+  aftercare   String
+  sortOrder   Int               @default(0)
+  bookings    Booking[]
+}
+
+model Booking {
+  id           String        @id @default(cuid())
+  reference    String        @unique
+  status       BookingStatus @default(CONFIRMED)
+  startAt      DateTime
+  endAt        DateTime
+  customerName String
+  phone        String
+  email        String
+  note         String?
+  treatmentId  String
+  treatment    Treatment     @relation(fields: [treatmentId], references: [id])
+  doctorId     String
+  doctor       Doctor        @relation(fields: [doctorId], references: [id])
+  branchId     String
+  branch       Branch        @relation(fields: [branchId], references: [id])
+  createdAt    DateTime      @default(now())
+  cancelledAt  DateTime?
+  statusAt     DateTime?
+
+  @@index([doctorId, startAt])
+  @@index([branchId, startAt])
+  @@index([phone])
+}

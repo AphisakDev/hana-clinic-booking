@@ -1,0 +1,125 @@
+<header class="page-head">
+  <div>
+    <span class="eyebrow">ภาพรวม</span>
+    <h1>สวัสดี {{ auth.staff()?.name }}</h1>
+    @if (stats.value(); as s) {
+      <div class="meta-row">
+        <p class="muted">{{ thaiDate(s.today, { weekday: true }) }}</p>
+        <span class="live-badge" title="ระบบรีเฟรชข้อมูลให้อัตโนมัติทุก 15 วินาที">
+          <span class="pulse-dot"></span> สด (อัปเดต {{ lastUpdated() }})
+        </span>
+        <button
+          type="button"
+          class="refresh-btn"
+          [class.spinning]="stats.isLoading()"
+          (click)="reload()"
+          title="กดเพื่อรีเฟรชข้อมูลทันที"
+          aria-label="รีเฟรชข้อมูลทันที"
+        >
+          <app-icon name="refresh" [size]="14" />
+        </button>
+      </div>
+    }
+  </div>
+  <app-branch-picker [(value)]="branch" />
+</header>
+
+@if (error(); as message) {
+  <div class="error-banner" role="alert">
+    <app-icon name="alert" /> {{ message }}
+    <button type="button" class="link-action" (click)="stats.reload()">ลองใหม่</button>
+  </div>
+} @else if (stats.value(); as s) {
+  <section class="kpis" aria-label="ตัวเลขสำคัญ">
+    <div class="card kpi kpi-today">
+      <div class="kpi-top">
+        <span class="kpi-label"><app-icon name="calendar" [size]="16" /> นัดวันนี้</span>
+        <a class="link-action" routerLink="/admin/schedule"
+          >ดูตารางนัด <app-icon name="arrowRight" [size]="14"
+        /></a>
+      </div>
+      <div class="kpi-num-row">
+        <strong class="kpi-value">{{ s.todayTotal ?? s.todayBookings }}</strong>
+        <span class="muted small">นัดทั้งหมด</span>
+      </div>
+      <div class="status-chips">
+        @for (status of statusOrder; track status) {
+          @if (s.todayByStatus && s.todayByStatus[status] > 0) {
+            <span class="status-pill" [attr.data-status]="status">
+              {{ labels[status] }} <strong>{{ s.todayByStatus[status] }}</strong>
+            </span>
+          }
+        }
+        @if ((s.todayTotal ?? s.todayBookings) === 0) {
+          <span class="muted small">ไม่มีนัดหมายวันนี้</span>
+        }
+      </div>
+    </div>
+
+    <div class="card kpi">
+      <span class="kpi-label"><app-icon name="wallet" [size]="16" /> รายได้คาดการณ์วันนี้</span>
+      <strong class="kpi-value">{{ baht(s.todayRevenueThb) }}</strong>
+      @if (s.todayCompletedRevenueThb > 0) {
+        <span class="small success-text">
+          รับจริงแล้ว {{ baht(s.todayCompletedRevenueThb) }}
+        </span>
+      } @else {
+        <span class="muted small">ไม่รวมนัดที่ยกเลิกหรือไม่มา</span>
+      }
+    </div>
+
+    <div class="card kpi">
+      <span class="kpi-label"><app-icon name="sparkles" [size]="16" /> นัด 7 วันข้างหน้า</span>
+      <strong class="kpi-value">{{ s.next7DaysBookings }}</strong>
+      <span class="muted small">รวมวันนี้</span>
+    </div>
+
+    <div class="card kpi">
+      <span class="kpi-label"><app-icon name="alert" [size]="16" /> ไม่มาตามนัด (30 วัน)</span>
+      <strong class="kpi-value">{{ percent(s.noShowRate30d) }}</strong>
+      <span class="muted small">ของนัดที่ผ่านไปแล้ว</span>
+    </div>
+  </section>
+
+  <section class="panels">
+    <div class="card panel">
+      <h2>นัดหมาย 7 วันข้างหน้า</h2>
+      <div
+        class="chart"
+        role="img"
+        [attr.aria-label]="'จำนวนนัดรายวัน: ' + s.daily.map((d) => d.bookings).join(', ')"
+      >
+        @for (bar of bars(); track bar.date) {
+          <div class="bar-col">
+            <span class="bar-value">{{ bar.bookings }}</span>
+            <div class="bar-track"><div class="bar" [style.height.%]="bar.height"></div></div>
+            <span class="bar-label" [class.today]="$first">{{ bar.label }}<br />{{ bar.day }}</span>
+          </div>
+        }
+      </div>
+    </div>
+
+    <div class="card panel">
+      <h2>ทรีตเมนต์ยอดนิยม (30 วัน)</h2>
+      @if (s.topTreatments30d.length) {
+        <ol class="top">
+          @for (t of s.topTreatments30d; track t.slug; let i = $index) {
+            <li>
+              <span class="rank">{{ i + 1 }}</span>
+              <span class="grow">{{ t.name }}</span>
+              <strong>{{ t.count }} นัด</strong>
+            </li>
+          }
+        </ol>
+      } @else {
+        <p class="muted">ยังไม่มีข้อมูล</p>
+      }
+    </div>
+  </section>
+} @else {
+  <div class="kpis">
+    @for (i of [1, 2, 3, 4]; track i) {
+      <div class="skeleton" style="height: 128px"></div>
+    }
+  </div>
+}

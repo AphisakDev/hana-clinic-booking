@@ -1,0 +1,122 @@
+<div class="container">
+  @if (notFound()) {
+    <div class="state-box card missing">
+      <h1>ไม่พบทรีตเมนต์นี้</h1>
+      <a class="btn btn-secondary" routerLink="/">กลับไปดูทรีตเมนต์ทั้งหมด</a>
+    </div>
+  } @else if (error(); as message) {
+    <div class="error-banner page-error" role="alert">
+      <app-icon name="alert" /> {{ message }}
+      <button type="button" class="link-action" (click)="treatment.reload()">ลองใหม่</button>
+    </div>
+  } @else if (treatment.hasValue()) {
+    @let t = treatment.value();
+    <nav class="breadcrumb" aria-label="breadcrumb">
+      <a routerLink="/">ทรีตเมนต์</a>
+      <app-icon name="chevronRight" [size]="12" />
+      <span aria-current="page">{{ t.name }}</span>
+    </nav>
+
+    <section class="overview">
+      <div class="imagery">
+        <img
+          appImgFallback
+          class="photo"
+          [src]="t.imageUrl"
+          [alt]="t.name"
+          width="672"
+          height="436"
+        />
+        @if (t.popular) {
+          <span class="chip popular"
+            ><app-icon name="sparkles" [size]="14" /> ทรีตเมนต์ยอดนิยม</span
+          >
+        }
+      </div>
+
+      <div class="intro">
+        <span class="eyebrow">{{ categoryLabels[t.category] }}</span>
+        <h1>{{ t.name }}</h1>
+        <p class="summary">{{ t.summary }}</p>
+        <div class="price-row">
+          <span class="price">{{ price(t.priceThb) }}</span>
+          <span class="duration"
+            ><app-icon name="clock" [size]="17" /> {{ t.durationMin }} นาที</span
+          >
+          @if (t.badge) {
+            <span class="muted">{{ t.badge }}</span>
+          }
+        </div>
+        <hr />
+        <p class="included"><app-icon name="check" [size]="16" /> {{ t.highlight }}</p>
+        <a class="btn btn-primary btn-block" [routerLink]="['/book', t.slug]">
+          จองคิวทรีตเมนต์นี้ <app-icon name="arrowRight" [size]="16" />
+        </a>
+        <p class="pay-note muted">ชำระที่คลินิก · เลื่อนหรือยกเลิกฟรีก่อน 24 ชม.</p>
+      </div>
+    </section>
+
+    <section class="essentials">
+      <div class="explain">
+        <h2>เกี่ยวกับทรีตเมนต์</h2>
+        <p class="description">{{ t.description }}</p>
+
+        @if (t.steps.length) {
+          <ol class="steps">
+            @for (step of t.steps; track step.title; let i = $index) {
+              <li>
+                <span class="step-no">{{ stepNumber(i) }}</span>
+                <strong>{{ step.title }}</strong>
+                <p class="muted">{{ step.description }}</p>
+              </li>
+            }
+          </ol>
+        }
+
+        <div class="prep card">
+          <h3>ก่อนมาคลินิก</h3>
+          <ul>
+            @for (tip of t.prepTips; track tip) {
+              <li><app-icon name="check" [size]="16" /> {{ tip }}</li>
+            }
+          </ul>
+          <p class="muted aftercare">{{ t.aftercare }}</p>
+        </div>
+      </div>
+
+      <aside class="side">
+        <div class="card doctors">
+          <span class="eyebrow">ดูแลโดยแพทย์ผู้เชี่ยวชาญ</span>
+          @if (doctors.hasValue()) {
+            @for (d of doctors.value().slice(0, 2); track d.id) {
+              <div class="doctor">
+                <span class="avatar" aria-hidden="true">{{
+                  d.name.split(' ')[1]?.charAt(0) ?? d.name.charAt(0)
+                }}</span>
+                <div>
+                  <strong>{{ d.name }}</strong>
+                  <p class="muted">{{ d.title }} · ประสบการณ์ {{ d.experienceYears }} ปี</p>
+                </div>
+              </div>
+            }
+          }
+          <a class="link-action" routerLink="/doctors"
+            >ดูทีมแพทย์ทั้งหมด <app-icon name="arrowUpRight" [size]="14"
+          /></a>
+        </div>
+
+        <div class="card safety">
+          <h3><app-icon name="shield" [size]="19" /> ความปลอดภัยมาก่อนเสมอ</h3>
+          <p class="muted">
+            แพทย์จะประเมินผิวก่อนทำทุกครั้ง หากไม่เหมาะ เราจะแนะนำทางเลือกอื่นโดยไม่มีค่าใช้จ่าย
+          </p>
+        </div>
+      </aside>
+    </section>
+  } @else {
+    <div class="loading">
+      <div class="skeleton" style="height: 436px"></div>
+      <div class="skeleton" style="height: 360px"></div>
+    </div>
+  }
+</div>

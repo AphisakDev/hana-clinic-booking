@@ -1,0 +1,346 @@
+<div class="container">
+  <a class="back link-action" [routerLink]="['/treatments', slug()]">
+    <app-icon name="arrowLeft" [size]="15" />
+    {{ treatment.hasValue() ? treatment.value().name : 'กลับ' }}
+  </a>
+
+  <header class="intro">
+    <div>
+      <span class="eyebrow">จองคิวออนไลน์</span>
+      <h1>จองคิวของคุณ</h1>
+      <p class="muted">เลือกสาขา แพทย์ และเวลาที่สะดวก ไม่ต้องจ่ายล่วงหน้า</p>
+    </div>
+    <ol class="progress" aria-label="ขั้นตอนการจอง">
+      <li class="current">01 เลือกนัดหมาย</li>
+      <li class="line" aria-hidden="true"></li>
+      <li>02 ยืนยัน</li>
+    </ol>
+  </header>
+
+  @if (treatment.error()) {
+    <div class="error-banner" role="alert">
+      <app-icon name="alert" /> ไม่พบทรีตเมนต์นี้
+      <a class="link-action" routerLink="/">เลือกทรีตเมนต์อื่น</a>
+    </div>
+  } @else {
+    <form class="columns" (ngSubmit)="submit()" [formGroup]="form" novalidate>
+      <div class="selections card">
+        <!-- 1. Treatment -->
+        <section>
+          <h2 class="step-title"><span class="step-no">1</span> ทรีตเมนต์</h2>
+          @if (treatment.hasValue()) {
+            @let t = treatment.value();
+            <div class="treatment-pick">
+              <img
+                appImgFallback
+                class="photo thumb"
+                [src]="t.imageUrl"
+                alt=""
+                width="66"
+                height="56"
+              />
+              <div class="grow">
+                <strong>{{ t.name }}</strong>
+                <p class="muted small">{{ t.durationMin }} นาที · {{ t.highlight }}</p>
+              </div>
+              <strong>{{ price(t.priceThb) }}</strong>
+              <a class="link-action small" routerLink="/">เปลี่ยน</a>
+            </div>
+          } @else {
+            <div class="skeleton" style="height: 88px"></div>
+          }
+        </section>
+
+        <!-- 2. Branch & doctor -->
+        <section>
+          <h2 class="step-title"><span class="step-no">2</span> สาขาและแพทย์</h2>
+          <div class="option-grid" role="radiogroup" aria-label="สาขา">
+            @for (b of branches.value() ?? []; track b.id) {
+              <label class="option" [class.selected]="branchSlug() === b.slug">
+                <input
+                  type="radio"
+                  name="branch"
+                  class="visually-hidden"
+                  [checked]="branchSlug() === b.slug"
+                  (change)="branchSlug.set(b.slug)"
+                />
+                <app-icon name="mapPin" [size]="20" />
+                <span class="grow">
+                  <strong>{{ b.name }}</strong>
+                  <span class="muted small block"
+                    >{{ b.transit }} · เปิด {{ b.openTime }}–{{ b.closeTime }} น.</span
+                  >
+                </span>
+                <app-icon class="tick" name="checkCircle" [size]="19" />
+              </label>
+            }
+          </div>
+
+          <div class="option-grid doctors" role="radiogroup" aria-label="แพทย์">
+            <label class="option" [class.selected]="doctorSlug() === 'any'">
+              <input
+                type="radio"
+                name="doctor"
+                class="visually-hidden"
+                [checked]="doctorSlug() === 'any'"
+                (change)="doctorSlug.set('any')"
+              />
+              <app-icon name="users" [size]="22" />
+              <span class="grow">
+                <strong>ไม่ระบุแพทย์</strong>
+                <span class="muted small block">แพทย์ที่ว่างคิวแรก</span>
+              </span>
+              <app-icon class="tick" name="checkCircle" [size]="19" />
+            </label>
+            @for (d of doctors.value() ?? []; track d.id) {
+              <label class="option" [class.selected]="doctorSlug() === d.slug">
+                <input
+                  type="radio"
+                  name="doctor"
+                  class="visually-hidden"
+                  [checked]="doctorSlug() === d.slug"
+                  (change)="doctorSlug.set(d.slug)"
+                />
+                <span class="avatar" aria-hidden="true">{{ d.name.split(' ')[1]?.charAt(0) }}</span>
+                <span class="grow">
+                  <strong>{{ d.name }}</strong>
+                  <span class="muted small block">{{ d.title }}</span>
+                </span>
+                <app-icon class="tick" name="checkCircle" [size]="19" />
+              </label>
+            }
+          </div>
+        </section>
+
+        <!-- 3. Date & time -->
+        <section>
+          <h2 class="step-title">
+            <span class="step-no">3</span> วันและเวลา
+            <span class="muted hint">เวลาประเทศไทย (GMT+7)</span>
+          </h2>
+          <div class="picker">
+            <div class="calendar card">
+              <div class="month-nav">
+                <button
+                  type="button"
+                  class="icon-btn"
+                  (click)="moveMonth(-1)"
+                  [disabled]="!canGoBack()"
+                  aria-label="เดือนก่อนหน้า"
+                >
+                  <app-icon name="chevronLeft" [size]="16" />
+                </button>
+                <strong aria-live="polite">{{ monthLabel() }}</strong>
+                <button
+                  type="button"
+                  class="icon-btn"
+                  (click)="moveMonth(1)"
+                  [disabled]="!canGoForward()"
+                  aria-label="เดือนถัดไป"
+                >
+                  <app-icon name="chevronRight" [size]="16" />
+                </button>
+              </div>
+              <div class="weekdays" aria-hidden="true">
+                @for (w of weekdays; track w) {
+                  <span>{{ w }}</span>
+                }
+              </div>
+              <div class="days">
+                @for (d of calendar(); track d.iso) {
+                  <button
+                    type="button"
+                    class="day"
+                    [class.outside]="!d.inMonth"
+                    [class.selected]="d.iso === date()"
+                    [class.today]="d.iso === today"
+                    [disabled]="!d.selectable"
+                    [attr.aria-label]="thaiDate(d.iso, { weekday: true })"
+                    [attr.aria-pressed]="d.iso === date()"
+                    (click)="pickDate(d.iso)"
+                  >
+                    {{ d.day }}
+                  </button>
+                }
+              </div>
+              <p class="muted small cal-note">จองล่วงหน้าได้สูงสุด 60 วัน</p>
+            </div>
+
+            <div class="times">
+              <strong class="day-title">{{ thaiDate(date(), { weekday: true }) }}</strong>
+              @if (availability.isLoading()) {
+                <p class="muted small">กำลังโหลดคิวว่าง…</p>
+              } @else if (availability.error()) {
+                <p class="error-text small">
+                  โหลดคิวว่างไม่สำเร็จ
+                  <button type="button" class="link-action" (click)="availability.reload()">
+                    ลองใหม่
+                  </button>
+                </p>
+              } @else {
+                <p class="muted small">
+                  {{
+                    freeCount() > 0
+                      ? 'ว่าง ' + freeCount() + ' คิว'
+                      : 'ไม่มีคิวว่างในวันนี้ ลองเลือกวันอื่น'
+                  }}
+                </p>
+              }
+
+              @for (
+                group of [
+                  { label: 'ช่วงเช้า', slots: morningSlots() },
+                  { label: 'ช่วงบ่าย–เย็น', slots: afternoonSlots() },
+                ];
+                track group.label
+              ) {
+                @if (group.slots.length) {
+                  <span class="slot-label">{{ group.label }}</span>
+                  <div class="slots" role="radiogroup" [attr.aria-label]="group.label">
+                    @for (s of group.slots; track s.time) {
+                      <button
+                        type="button"
+                        class="slot"
+                        role="radio"
+                        [class.selected]="time() === s.time"
+                        [attr.aria-checked]="time() === s.time"
+                        [disabled]="!s.available"
+                        (click)="time.set(s.time); submitError.set(null)"
+                      >
+                        {{ s.time }}
+                      </button>
+                    }
+                  </div>
+                }
+              }
+
+              @if (time()) {
+                <p class="visit-length">
+                  <app-icon name="clock" [size]="15" /> เวลานัด: {{ time() }}–{{ endTime() }} น.
+                </p>
+              }
+            </div>
+          </div>
+        </section>
+
+        <!-- 4. Contact -->
+        <section>
+          <h2 class="step-title"><span class="step-no">4</span> ข้อมูลติดต่อ</h2>
+          <div class="fields">
+            <label class="field">
+              <span>ชื่อ–นามสกุล</span>
+              <input
+                formControlName="customerName"
+                autocomplete="name"
+                [class.invalid]="showError('customerName')"
+              />
+              @if (showError('customerName')) {
+                <small class="error-text">กรุณากรอกชื่อ</small>
+              }
+            </label>
+            <label class="field">
+              <span>เบอร์โทร</span>
+              <input
+                formControlName="phone"
+                type="tel"
+                inputmode="tel"
+                autocomplete="tel"
+                placeholder="08x-xxx-xxxx"
+                [class.invalid]="showError('phone')"
+              />
+              @if (showError('phone')) {
+                <small class="error-text">เบอร์โทรไม่ถูกต้อง</small>
+              }
+            </label>
+            <label class="field">
+              <span>อีเมล</span>
+              <input
+                formControlName="email"
+                type="email"
+                autocomplete="email"
+                [class.invalid]="showError('email')"
+              />
+              @if (showError('email')) {
+                <small class="error-text">อีเมลไม่ถูกต้อง</small>
+              }
+            </label>
+            <label class="field wide">
+              <span>หมายเหตุถึงแพทย์ <span class="muted">(ไม่บังคับ)</span></span>
+              <textarea
+                formControlName="note"
+                rows="2"
+                placeholder="เช่น ผิวแพ้ง่าย หรือเคยทำทรีตเมนต์มาก่อน"
+              ></textarea>
+            </label>
+          </div>
+        </section>
+      </div>
+
+      <!-- Summary -->
+      <aside class="sidebar">
+        <div class="summary card">
+          <h2>สรุปการจอง</h2>
+          @if (treatment.hasValue()) {
+            <div>
+              <strong class="summary-name">{{ treatment.value().name }}</strong>
+              <p class="muted small">{{ treatment.value().durationMin }} นาที</p>
+            </div>
+          }
+          <hr />
+          <dl>
+            <div>
+              <app-icon name="mapPin" />
+              <dt>สาขา</dt>
+              <dd>{{ selectedBranch()?.name ?? '—' }}</dd>
+            </div>
+            <div>
+              <app-icon name="user" />
+              <dt>แพทย์</dt>
+              <dd>{{ selectedDoctor()?.name ?? 'แพทย์ที่ว่างคิวแรก' }}</dd>
+            </div>
+            <div>
+              <app-icon name="calendar" />
+              <dt>วันที่</dt>
+              <dd>{{ thaiDate(date(), { weekday: true }) }}</dd>
+            </div>
+            <div>
+              <app-icon name="clock" />
+              <dt>เวลา</dt>
+              <dd>{{ time() ? time() + '–' + endTime() + ' น.' : 'ยังไม่ได้เลือก' }}</dd>
+            </div>
+          </dl>
+          <hr />
+          <div class="total">
+            <span>รวม</span>
+            <strong>{{ treatment.hasValue() ? price(treatment.value().priceThb) : '—' }}</strong>
+          </div>
+          <p class="muted small pay">
+            <app-icon name="wallet" [size]="16" /> ยังไม่ต้องจ่ายวันนี้ ชำระที่คลินิก
+          </p>
+
+          @if (submitError(); as message) {
+            <div class="error-banner" role="alert"><app-icon name="alert" /> {{ message }}</div>
+          }
+
+          <button type="submit" class="btn btn-primary btn-block" [disabled]="submitting()">
+            {{ submitting() ? 'กำลังยืนยัน…' : 'ยืนยันการจอง' }}
+            @if (!submitting()) {
+              <app-icon name="arrowRight" [size]="16" />
+            }
+          </button>
+          <p class="muted fine">
+            การยืนยันถือว่ายอมรับนโยบายการจอง เลื่อนหรือยกเลิกนัดได้ฟรีก่อนเวลานัด 24 ชม.
+          </p>
+        </div>
+
+        <div class="reassure">
+          <app-icon name="shield" [size]="22" />
+          <div>
+            <strong>ไม่มีเซลล์ ไม่ขายแพ็กเกจ</strong>
+            <p class="muted small">จ่ายเฉพาะสิ่งที่คุณเลือก แพทย์ประเมินผิวก่อนทำทุกครั้ง</p>
+          </div>
+        </div>
+      </aside>
+    </form>
+  }
+</div>

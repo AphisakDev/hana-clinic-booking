@@ -1,0 +1,174 @@
+<header class="page-head">
+  <div>
+    <span class="eyebrow">ตารางนัด</span>
+    <h1>{{ thaiDate(date(), { weekday: true }) }}</h1>
+  </div>
+  <app-branch-picker [(value)]="branch" />
+</header>
+
+<div class="toolbar">
+  <div class="day-nav">
+    <button type="button" class="icon-btn" (click)="shiftDay(-1)" aria-label="วันก่อนหน้า">
+      <app-icon name="chevronLeft" [size]="16" />
+    </button>
+    <input type="date" [value]="date()" (change)="onDateInput($event)" aria-label="เลือกวันที่" />
+    <button type="button" class="icon-btn" (click)="shiftDay(1)" aria-label="วันถัดไป">
+      <app-icon name="chevronRight" [size]="16" />
+    </button>
+    @if (date() !== today) {
+      <button type="button" class="link-action" (click)="date.set(today)">วันนี้</button>
+    }
+  </div>
+  <button type="button" class="btn btn-secondary" (click)="openBlockForm()">
+    <app-icon name="x" [size]="16" /> บล็อกเวลาแพทย์
+  </button>
+</div>
+
+@if (showBlockForm()) {
+  <form class="card block-form" [formGroup]="blockForm" (ngSubmit)="saveBlock()" novalidate>
+    <h2>บล็อกเวลา · {{ thaiDate(date(), { short: true }) }}</h2>
+    <p class="muted small">ช่วงที่บล็อกจะหายจากหน้าจองของลูกค้าทันที บล็อกทับนัดที่มีอยู่ไม่ได้</p>
+    <div class="form-row">
+      <label class="field">
+        <span>แพทย์</span>
+        <select formControlName="doctorSlug">
+          <option value="" disabled>เลือกแพทย์</option>
+          @for (d of schedule.value()?.doctors ?? []; track d.slug) {
+            <option [value]="d.slug">{{ d.name }}</option>
+          }
+        </select>
+      </label>
+      <label class="field">
+        <span>ตั้งแต่</span>
+        <input type="time" formControlName="startTime" step="1800" />
+      </label>
+      <label class="field">
+        <span>ถึง</span>
+        <input type="time" formControlName="endTime" step="1800" />
+      </label>
+      <label class="field grow">
+        <span>เหตุผล</span>
+        <input formControlName="reason" placeholder="เช่น ลาพักร้อน, ประชุม" />
+      </label>
+    </div>
+    @if (blockError(); as message) {
+      <div class="error-banner" role="alert"><app-icon name="alert" /> {{ message }}</div>
+    }
+    <div class="form-actions">
+      <button type="button" class="btn btn-secondary" (click)="showBlockForm.set(false)">
+        ยกเลิก
+      </button>
+      <button type="submit" class="btn btn-primary" [disabled]="blockSaving()">
+        {{ blockSaving() ? 'กำลังบันทึก…' : 'บันทึก' }}
+      </button>
+    </div>
+  </form>
+}
+
+@if (actionError(); as message) {
+  <div class="error-banner action-error" role="alert">
+    <app-icon name="alert" /> {{ message }}
+    <button type="button" class="link-action" (click)="actionError.set(null)">ปิด</button>
+  </div>
+}
+
+@if (loadError(); as message) {
+  <div class="error-banner" role="alert">
+    <app-icon name="alert" /> {{ message }}
+    <button type="button" class="link-action" (click)="schedule.reload()">ลองใหม่</button>
+  </div>
+} @else if (schedule.value(); as s) {
+  <div class="summary">
+    <span class="sum-total"
+      ><strong>{{ s.summary.total }}</strong> นัด</span
+    >
+    @for (status of statusOrder; track status) {
+      @if (s.summary.byStatus[status]) {
+        <span class="status-pill" [attr.data-status]="status"
+          >{{ labels[status] }} {{ s.summary.byStatus[status] }}</span
+        >
+      }
+    }
+    <span class="muted sum-revenue">รายได้คาดการณ์ {{ baht(s.summary.expectedRevenueThb) }}</span>
+    <span class="muted hours">เปิด {{ s.branch.openTime }}–{{ s.branch.closeTime }} น.</span>
+  </div>
+
+  <div class="columns" [class.dim]="schedule.isLoading()">
+    @for (doctor of s.doctors; track doctor.slug) {
+      <section class="doctor-col" [attr.aria-label]="doctor.name">
+        <header class="doctor-head">
+          <div>
+            <strong>{{ doctor.name }}</strong>
+            <span class="muted small">{{ doctor.title }} · {{ doctor.bookings.length }} นัด</span>
+          </div>
+          <button type="button" class="link-action small" (click)="openBlockForm(doctor.slug)">
+            บล็อกเวลา
+          </button>
+        </header>
+
+        @for (block of doctor.blocks; track block.id) {
+          <div class="block-card">
+            <div>
+              <strong>{{ block.startTime }}–{{ block.endTime }}</strong>
+              <span>{{ block.reason }}</span>
+            </div>
+            <button
+              type="button"
+              class="icon-btn"
+              (click)="removeBlock(block.id)"
+              aria-label="ลบช่วงที่บล็อก"
+            >
+              <app-icon name="x" [size]="15" />
+            </button>
+          </div>
+        }
+
+        @for (b of doctor.bookings; track b.reference) {
+          <article class="booking card" [attr.data-status]="b.status">
+            <div class="booking-top">
+              <span class="time">{{ b.startTime }}–{{ b.endTime }}</span>
+              <span class="status-pill" [attr.data-status]="b.status">{{ labels[b.status] }}</span>
+            </div>
+            <strong class="client">{{ b.customerName }}</strong>
+            <span class="treatment">{{ b.treatment.name }} · {{ baht(b.treatment.priceThb) }}</span>
+            <span class="muted small contact">
+              <a [href]="'tel:' + b.phone">{{ b.phone }}</a> · {{ b.reference }}
+            </span>
+            @if (b.note) {
+              <p class="note">“{{ b.note }}”</p>
+            }
+            @if (b.nextStatuses.length) {
+              <div class="actions">
+                @for (next of b.nextStatuses; track next) {
+                  <button
+                    type="button"
+                    class="act"
+                    [attr.data-action]="next"
+                    [class.confirm]="confirming() === b.reference + ':' + next"
+                    [disabled]="busy() === b.reference"
+                    (click)="act(b, next)"
+                  >
+                    {{
+                      confirming() === b.reference + ':' + next
+                        ? 'ยืนยัน' + actions[next] + '?'
+                        : actions[next]
+                    }}
+                  </button>
+                }
+              </div>
+            }
+          </article>
+        } @empty {
+          @if (!doctor.blocks.length) {
+            <p class="empty muted">ไม่มีนัดในวันนี้</p>
+          }
+        }
+      </section>
+    }
+  </div>
+} @else {
+  <div class="columns">
+    <div class="skeleton" style="height: 320px"></div>
+    <div class="skeleton" style="height: 320px"></div>
+  </div>
+}
