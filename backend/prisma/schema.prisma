@@ -62,8 +62,8 @@ model Branch {
 }
 
 model Doctor {
-  id              String    @id @default(cuid())
-  slug            String    @unique
+  id              String      @id @default(cuid())
+  slug            String      @unique
   name            String
   title           String
   experienceYears Int
